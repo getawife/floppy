@@ -1,136 +1,51 @@
 "use client";
-import { useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
+import GameCanvas from "@/components/GameCanvas";
+import PixelOverlay from "@/components/PixelOverlay";
+import { useAudio } from "@/hooks/useAudio";
+import TouchControls from "@/components/TouchControls";
 
 export default function Home() {
+  const [gameState, setGameState] = useState("IDLE");
+  const { playWin, playLose, playCoin } = useAudio();
+
+  const handleStart = () => setGameState("PLAYING");
+
+  const handleWin = useCallback(() => {
+    playWin();
+    setGameState("WON");
+  }, [playWin]);
+
+  const handleLose = useCallback(() => {
+    playLose();
+    setGameState("LOST");
+  }, [playLose]);
+
   useEffect(() => {
-    const loader = document.getElementById("loader");
-    const main_element = document.getElementById("main_element");
-    const storage = window.localStorage.getItem("game-started");
-
-    window.addEventListener("load", function () {
-      window.localStorage.removeItem("game-started");
-      console.log("Cleared existing game.");
-    });
-
-    window.addEventListener("keydown", function (event) {
-      //starting
-      if (event.key === "Enter") {
-        console.log("Game started...");
-        loader.innerText = "Loading game...";
-        this.window.localStorage.setItem("game-started", true);
-        main_element.remove();
-        const blob_div = this.document.createElement("div");
-        this.document.body.appendChild(blob_div);
-        blob_div.style.backgroundColor = "white";
-        blob_div.style.borderRadius = "0.5rem";
-        blob_div.style.width = "70px";
-        blob_div.style.textAlign = "center";
-        blob_div.style.position = "absolute";
-        blob_div.style.top = `${Math.floor(Math.random() * 100)}px`;
-        blob_div.style.left = `${Math.floor(Math.random() * 100)}px`;
-        blob_div.id = "blob_div";
-        const blob = this.document.createElement("h1");
-        blob.style.color = "black";
-        blob.innerText = "Player";
-        blob_div.appendChild(blob);
-
-        //spawn "guards"
-        const guards = [];
-        for (let i = 0; i < 3; i++) {
-          const guard = document.createElement("image");
-          guard.setAttribute("src", "../public/Pixel-Guards");
-          guard.style.borderRadius = "0.5rem";
-          guard.style.width = "70px";
-          guard.style.textAlign = "center";
-          guard.style.position = "absolute";
-          guard.style.top = `${Math.floor(Math.random() * 100)}px`;
-          guard.style.right = `${Math.floor(Math.random() * 100)}px`;
-          guard.id = `guard-${i}`;
-          guards.push(guard);
-          guards.forEach(() => {
-            let intTop = parseInt(guard.style.top);
-            let intRight = parseInt(guard.style.right);
-
-            intTop += Math.floor(Math.random() * 50);
-            intRight += Math.floor(Math.random() * 50);
-            guard.style.top = intTop + "px";
-            guard.style.right = intRight + "px";
-          });
-        }
-
-        for (const guard of guards) {
-          document.body.appendChild(guard);
-        }
+    const handleKeyDown = (e) => {
+      if (e.key === "Enter" && gameState !== "PLAYING") {
+        setGameState("PLAYING");
       }
-      //movement
-      else if (event.key === "d") {
-        const blob_div = this.document.getElementById("blob_div");
-        if (!blob_div) return console.log("Game not started");
-        let currentPosition = parseInt(blob_div.style.left, 10);
-        currentPosition += 10;
-        blob_div.style.left = currentPosition + "px";
-      } else if (event.key === "a") {
-        const blob_div = this.document.getElementById("blob_div");
-        if (!blob_div) return console.log("Game not started");
-        let currentPosition = parseInt(blob_div.style.left);
-        currentPosition -= 10;
-        blob_div.style.left = currentPosition + "px";
-      } else if (event.key === "w") {
-        const blob_div = this.document.getElementById("blob_div");
-        if (!blob_div) return console.log("Game not started");
-        let currentPosition = parseInt(blob_div.style.top);
-        let screenPosition = parseInt(this.window.screenX);
-        if (screenPosition >= currentPosition)
-          return (
-            this.window.location.reload() &&
-            this.window.localStorage.removeItem("game-started", true)
-          );
-        currentPosition -= 10;
-        blob_div.style.top = currentPosition + "px";
-      } else if (event.key === "s") {
-        const blob_div = this.document.getElementById("blob_div");
-        if (!blob_div) return console.log("Game not started");
-        let currentPosition = parseInt(blob_div.style.top);
-        let screenPosition = parseInt(this.window.screenX);
-        if (screenPosition >= currentPosition)
-          return (
-            this.window.location.reload() &&
-            this.window.localStorage.removeItem("game-started")
-          );
-        currentPosition += 10;
-        blob_div.style.top = currentPosition + "px";
-      }
-    });
-    if (storage !== null) {
-      const guards = document.querySelectorAll(".guard");
-      const player = document.getElementById("blob_div");
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [gameState]);
 
-      const div1Rects = [];
-      for (const guard of guards) {
-        const div1Rect = guard.getBoundingClientRect();
-        div1Rects.push(div1Rect);
-      }
-
-      const div2Rect = player.getBoundingClientRect();
-
-      for (const div1Rect of div1Rects) {
-        if (div1Rect.intersects(div2Rect)) {
-          console.log("Collision detected");
-          return;
-        }
-      }
-    }
-  }, []);
   return (
-    <div id="main">
-      <div className="flex h-screen" id="main_element">
-        <div className="m-auto font-sans text-5xl">
-          <h1 id="loader">
-            Press <code className="bg-gray-500 rounded-lg">enter</code> to
-            begin!
-          </h1>
-        </div>
-      </div>
+    <div className="relative w-screen h-screen bg-slate-950 text-white font-mono overflow-hidden select-none">
+      {gameState === "PLAYING" ? (
+        <>
+          <GameCanvas
+            onWin={handleWin}
+            onLose={handleLose}
+            onCollectCoin={playCoin}
+          />
+          <TouchControls />
+        </>
+      ) : (
+        <PixelOverlay gameState={gameState} onStart={handleStart} />
+      )}
     </div>
   );
 }
