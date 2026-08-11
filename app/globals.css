@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background-color: #11131c;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .pixel-font {
   font-family: "Press Start 2P", monospace;
 }
