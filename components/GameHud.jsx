@@ -3,7 +3,7 @@ import React from "react";
 export default function GameHud({ score, highScore, lives }) {
   return (
     <div className="absolute top-0 left-0 p-6 pointer-events-none select-none z-10">
-      <div className="text-base font-bold text-white drop-shadow pixel-font">
+      <div className="text-base font-bold text-white [text-shadow:_2px_2px_0px_#000000] pixel-font">
         <div>SCORE: {score}</div>
         <div>BEST: {highScore}</div>
       </div>

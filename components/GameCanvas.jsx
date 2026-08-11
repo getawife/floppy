@@ -29,7 +29,7 @@ export default function GameCanvas({ onWin, onLose, onCollectCoin }) {
     }
   }, [score, highScore]);
 
-  const imagesRef = useRef(assetLoader.loadAll());
+  const imagesRef = useRef(assetLoader.images);
   const engineRef = useRef(null);
 
   const keysRef = useInput(engineRef);
