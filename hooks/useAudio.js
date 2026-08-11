@@ -10,7 +10,6 @@ const SFX_PATHS = {
 };
 
 export const useAudio = () => {
-  const [isMuted, setIsMuted] = useState(false);
   const musicRef = useRef(null);
   const sfxBuffers = useRef({});
 
@@ -37,11 +36,9 @@ export const useAudio = () => {
   const playMusic = useCallback(() => {
     if (musicRef.current) {
       musicRef.current.loop = true;
-      if (!isMuted) {
-        musicRef.current.play().catch(() => {});
-      }
+      musicRef.current.play().catch(() => {});
     }
-  }, [isMuted]);
+  }, []);
 
   const stopMusic = useCallback(() => {
     if (musicRef.current) {
@@ -50,25 +47,12 @@ export const useAudio = () => {
     }
   }, []);
 
-  const playSfx = useCallback(
-    (name) => {
-      if (isMuted || !sfxBuffers.current[name]) return;
-      const sound = sfxBuffers.current[name].cloneNode();
-      sound.volume = 0.6;
-      sound.play().catch(() => {});
-    },
-    [isMuted],
-  );
-
-  const toggleMute = useCallback(() => {
-    setIsMuted((prev) => {
-      const nextState = !prev;
-      if (musicRef.current) {
-        musicRef.current.muted = nextState;
-      }
-      return nextState;
-    });
+  const playSfx = useCallback((name) => {
+    if (!sfxBuffers.current[name]) return;
+    const sound = sfxBuffers.current[name].cloneNode();
+    sound.volume = 0.6;
+    sound.play().catch(() => {});
   }, []);
 
-  return { playMusic, stopMusic, playSfx, toggleMute, isMuted };
+  return { playMusic, stopMusic, playSfx };
 };
