@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useAudio } from "@/hooks/useAudio";
 import { assetLoader } from "@/game/assetLoader";
+import { ASSET_PATHS } from "@/game/constants";
 
 const GameCanvas = dynamic(() => import("@/components/GameCanvas"), {
   ssr: false,
@@ -13,6 +14,7 @@ export default function Home() {
   const [gameState, setGameState] = useState("IDLE");
   const [isAssetsLoaded, setIsAssetsLoaded] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
+  const [gameOverBiome, setGameOverBiome] = useState(null);
   const { playSfx } = useAudio();
 
   useEffect(() => {
@@ -31,10 +33,14 @@ export default function Home() {
     }
   };
 
-  const handleLose = useCallback(() => {
-    if (playSfx) playSfx("hurt");
-    setGameState("LOST");
-  }, [playSfx]);
+  const handleLose = useCallback(
+    (lastBiome) => {
+      if (playSfx) playSfx("hurt");
+      if (lastBiome) setGameOverBiome(lastBiome);
+      setGameState("LOST");
+    },
+    [playSfx],
+  );
 
   const handleCollectCoin = useCallback(() => {
     if (playSfx) playSfx("coin");
@@ -51,6 +57,14 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gameState, isAssetsLoaded]);
 
+  const bgStyle = {
+    backgroundImage: `url(${
+      gameState === "LOST" && gameOverBiome
+        ? ASSET_PATHS[gameOverBiome.sky] || "/sky.png"
+        : "/sky.png"
+    })`,
+  };
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-[#11131c] text-white select-none">
       {gameState === "PLAYING" ? (
@@ -60,7 +74,10 @@ export default function Home() {
           playSfx={playSfx}
         />
       ) : (
-        <main className="absolute inset-0 flex flex-col items-center justify-center bg-[url('/sky.png')] bg-cover bg-center pixel-rendering">
+        <main
+          style={bgStyle}
+          className="absolute inset-0 flex flex-col items-center justify-center bg-cover bg-center pixel-rendering"
+        >
           <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
 
           <div className="relative z-10 text-center space-y-6">

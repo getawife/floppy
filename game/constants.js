@@ -17,34 +17,49 @@ export const PHYSICS = {
 export const BIOMES = {
   GRASSLAND: {
     name: "grassland",
-    startX: 0,
+    length: 1200,
     platformTheme: "GRASS",
     sky: "sky",
   },
   SNOW: {
     name: "snow",
-    startX: 1200,
+    length: 1600,
     platformTheme: "SNOW",
     sky: "snow",
   },
   DESERT: {
     name: "desert",
-    startX: 2800,
+    length: 1700,
     platformTheme: "SAND",
     sky: "desert",
   },
   VOLCANIC: {
     name: "volcanic",
-    startX: 4500,
+    length: 2000,
     platformTheme: "LAVA",
     sky: "volcanic",
   },
 };
 
+const BIOME_SEQUENCE = [
+  BIOMES.GRASSLAND,
+  BIOMES.SNOW,
+  BIOMES.DESERT,
+  BIOMES.VOLCANIC,
+];
+
+const TOTAL_CYCLE_LENGTH = BIOME_SEQUENCE.reduce((sum, b) => sum + b.length, 0);
+
 export function getBiome(worldX) {
-  if (worldX >= BIOMES.VOLCANIC.startX) return BIOMES.VOLCANIC;
-  if (worldX >= BIOMES.DESERT.startX) return BIOMES.DESERT;
-  if (worldX >= BIOMES.SNOW.startX) return BIOMES.SNOW;
+  const cycleX = Math.abs(worldX) % TOTAL_CYCLE_LENGTH;
+  let currentPos = 0;
+
+  for (const biome of BIOME_SEQUENCE) {
+    currentPos += biome.length;
+    if (cycleX < currentPos) {
+      return biome;
+    }
+  }
   return BIOMES.GRASSLAND;
 }
 

@@ -1,4 +1,4 @@
-import { PHYSICS, MECHANICS } from "./constants";
+import { PHYSICS, MECHANICS, getBiome } from "./constants";
 import { LevelGenerator } from "./LevelGenerator";
 
 export class PhysicsEngine {
@@ -57,13 +57,11 @@ export class PhysicsEngine {
   }
 
   static getSafeRespawnPlatform(engine) {
-    // Check if recorded last safe platform is still valid & visible
     const lastPlat = engine.platforms.find(
       (p) => p.id === engine.player.lastSafePlatform?.id && !p.isMoving,
     );
     if (lastPlat) return lastPlat;
 
-    // Fallback: find closest stable static platform behind player
     const validPlatforms = engine.platforms.filter(
       (p) => !p.isMoving && p.x <= engine.player.x,
     );
@@ -92,6 +90,11 @@ export class PhysicsEngine {
   static update(engine, dt, keys, canvasWidth, canvasHeight, callbacks) {
     engine.globalTimer++;
     const { player, camera } = engine;
+
+    const currentBiome = getBiome(player.x);
+    if (callbacks.onBiomeChange) {
+      callbacks.onBiomeChange(currentBiome);
+    }
 
     while (
       engine.platforms[engine.platforms.length - 1].x <
@@ -189,21 +192,23 @@ export class PhysicsEngine {
 
     player.grounded = false;
     engine.platforms.forEach((plat) => {
-      if (
-        player.x + player.width > plat.x &&
-        player.x < plat.x + plat.width &&
-        player.y + player.height >= plat.y &&
-        player.y + player.height <= plat.y + 12 &&
-        player.vy >= 0
-      ) {
-        player.y = plat.y - player.height;
-        player.vy = 0;
-        player.grounded = true;
+      const isHorizontallyAligned =
+        player.x + player.width > plat.x && player.x < plat.x + plat.width;
 
-        if (!plat.isMoving) {
-          player.lastSafePlatform = plat;
-        } else {
-          player.x += plat.moveSpeed * plat.moveDir;
+      if (isHorizontallyAligned && player.vy >= 0) {
+        const prevPlayerBottom = player.y - player.vy + player.height;
+        const currPlayerBottom = player.y + player.height;
+
+        if (prevPlayerBottom <= plat.y + 4 && currPlayerBottom >= plat.y) {
+          player.y = plat.y - player.height;
+          player.vy = 0;
+          player.grounded = true;
+
+          if (!plat.isMoving) {
+            player.lastSafePlatform = plat;
+          } else {
+            player.x += plat.moveSpeed * plat.moveDir;
+          }
         }
       }
     });
@@ -214,7 +219,7 @@ export class PhysicsEngine {
           player.x + player.width > shroom.x &&
           player.x < shroom.x + shroom.width &&
           player.y + player.height >= shroom.y &&
-          player.y + player.height <= shroom.y + 12 &&
+          player.y + player.height <= shroom.y + Math.max(12, player.vy + 2) &&
           player.vy > 0
         ) {
           player.vy = MECHANICS?.BOUNCE_FORCE || -17;
@@ -251,16 +256,18 @@ export class PhysicsEngine {
 
       enemy.grounded = false;
       engine.platforms.forEach((plat) => {
-        if (
-          enemy.x + enemy.width > plat.x &&
-          enemy.x < plat.x + plat.width &&
-          enemy.y + enemy.height >= plat.y &&
-          enemy.y + enemy.height <= plat.y + 12 &&
-          enemy.vy >= 0
-        ) {
-          enemy.y = plat.y - enemy.height;
-          enemy.vy = 0;
-          enemy.grounded = true;
+        const isHorizontallyAligned =
+          enemy.x + enemy.width > plat.x && enemy.x < plat.x + plat.width;
+
+        if (isHorizontallyAligned && enemy.vy >= 0) {
+          const prevEnemyBottom = enemy.y - enemy.vy + enemy.height;
+          const currEnemyBottom = enemy.y + enemy.height;
+
+          if (prevEnemyBottom <= plat.y + 4 && currEnemyBottom >= plat.y) {
+            enemy.y = plat.y - enemy.height;
+            enemy.vy = 0;
+            enemy.grounded = true;
+          }
         }
       });
 
@@ -350,7 +357,6 @@ export class PhysicsEngine {
       });
     }
 
-    // Void / Fall Check
     if (player.y > camera.y + canvasHeight + 150) {
       callbacks.playSfx("hurt");
       const respawnPlat = this.getSafeRespawnPlatform(engine);

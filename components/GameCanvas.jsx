@@ -13,6 +13,9 @@ export default function GameCanvas({ onWin, onLose, onCollectCoin }) {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [lives, setLives] = useState(3);
+
+  const currentBiomeRef = useRef(null);
+
   const { playMusic, stopMusic, playSfx } = useAudio();
 
   useEffect(() => {
@@ -39,13 +42,17 @@ export default function GameCanvas({ onWin, onLose, onCollectCoin }) {
     onLose,
     onCollectCoin,
     playSfx,
+    onBiomeChange: (biome) => {
+      currentBiomeRef.current = biome;
+    },
     addScore: (amt) => setScore((s) => s + amt),
     addLife: () => setLives((l) => Math.min(l + 1, 5)),
     deductLife: () => {
       setLives((l) => {
         const next = l - 1;
-        if (next <= 0 && callbacksRef.current.onLose)
-          callbacksRef.current.onLose();
+        if (next <= 0 && callbacksRef.current.onLose) {
+          callbacksRef.current.onLose(currentBiomeRef.current);
+        }
         return Math.max(0, next);
       });
     },
@@ -57,13 +64,17 @@ export default function GameCanvas({ onWin, onLose, onCollectCoin }) {
       onLose,
       onCollectCoin,
       playSfx,
+      onBiomeChange: (biome) => {
+        currentBiomeRef.current = biome;
+      },
       addScore: (amt) => setScore((s) => s + amt),
       addLife: () => setLives((l) => Math.min(l + 1, 5)),
       deductLife: () => {
         setLives((l) => {
           const next = l - 1;
-          if (next <= 0 && callbacksRef.current.onLose)
-            callbacksRef.current.onLose();
+          if (next <= 0 && callbacksRef.current.onLose) {
+            callbacksRef.current.onLose(currentBiomeRef.current);
+          }
           return Math.max(0, next);
         });
       },
