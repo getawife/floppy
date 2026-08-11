@@ -35,28 +35,7 @@ export default function Home() {
   }, [gameState]);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-[#11131c] text-white select-none font-pixel">
-      <style jsx global>{`
-        @font-face {
-          font-family: "PixelOperator";
-          src: url("/assets/fonts/PixelOperator8.ttf") format("truetype");
-        }
-
-        @font-face {
-          font-family: "PixelOperatorBold";
-          src: url("/assets/fonts/PixelOperator8-Bold.ttf") format("truetype");
-          font-weight: bold;
-        }
-
-        .font-pixel {
-          font-family: "PixelOperator", monospace;
-        }
-
-        .font-pixel-bold {
-          font-family: "PixelOperatorBold", monospace;
-        }
-      `}</style>
-
+    <div className="relative h-screen w-screen overflow-hidden bg-[#11131c] text-white select-none">
       {gameState === "PLAYING" ? (
         <GameCanvas
           onLose={handleLose}
@@ -67,12 +46,12 @@ export default function Home() {
         <main className="absolute inset-0 flex flex-col items-center justify-center bg-[#11131c]">
           {gameState === "IDLE" ? (
             <div className="text-center space-y-6">
-              <h1 className="font-pixel-bold text-6xl text-yellow-400 drop-shadow-[4px_4px_0_#a16207]">
+              <h1 className="text-6xl text-yellow-400 drop-shadow-[4px_4px_0_#a16207]">
                 FLOPPY
               </h1>
               <button
                 onClick={handleStart}
-                className="font-pixel-bold bg-emerald-500 hover:bg-emerald-400 text-black px-8 py-4 border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1 transition-all"
+                className="bg-emerald-500 hover:bg-emerald-400 text-black px-8 py-4 border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1 transition-all"
               >
                 START GAME
               </button>
@@ -80,12 +59,12 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center space-y-6">
-              <h1 className="font-pixel-bold text-6xl text-red-500 drop-shadow-[4px_4px_0_#7f1d1d]">
+              <h1 className="text-6xl text-red-500 drop-shadow-[4px_4px_0_#7f1d1d]">
                 GAME OVER
               </h1>
               <button
                 onClick={handleStart}
-                className="font-pixel-bold bg-red-600 hover:bg-red-500 text-white px-8 py-4 border-b-4 border-red-800 active:border-b-0 active:translate-y-1 transition-all"
+                className="bg-red-600 hover:bg-red-500 text-white px-8 py-4 border-b-4 border-red-800 active:border-b-0 active:translate-y-1 transition-all"
               >
                 TRY AGAIN
               </button>

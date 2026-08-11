@@ -14,11 +14,51 @@ export const PHYSICS = {
   JUMP_BUFFER_TIME: 0.12,
 };
 
+export const BIOMES = {
+  GRASSLAND: {
+    name: "grassland",
+    startX: 0,
+    platformTheme: "GRASS",
+    sky: "sky",
+  },
+  SNOW: {
+    name: "snow",
+    startX: 1200,
+    platformTheme: "SNOW",
+    sky: "snow",
+  },
+  DESERT: {
+    name: "desert",
+    startX: 2800,
+    platformTheme: "SAND",
+    sky: "desert",
+  },
+  VOLCANIC: {
+    name: "volcanic",
+    startX: 4500,
+    platformTheme: "LAVA",
+    sky: "volcanic",
+  },
+};
+
+export function getBiome(worldX) {
+  if (worldX >= BIOMES.VOLCANIC.startX) return BIOMES.VOLCANIC;
+  if (worldX >= BIOMES.DESERT.startX) return BIOMES.DESERT;
+  if (worldX >= BIOMES.SNOW.startX) return BIOMES.SNOW;
+  return BIOMES.GRASSLAND;
+}
+
 export const PLATFORM_THEMES = {
   GRASS: { name: "grass", sY: 0 },
+  SNOW: { name: "snow", sY: 16 },
+  SAND: { name: "sand", sY: 32 },
+  LAVA: { name: "lava", sY: 48 },
 };
 
 export const PLATFORM_SPRITE_SPECS = {
+  LEFT: { sX: 0 },
+  MID: { sX: 16 },
+  RIGHT: { sX: 32 },
   SMALL: { sX: 0, sWidth: 32, sHeight: 16 },
   LARGE: { sX: 32, sWidth: 48, sHeight: 16 },
 };
@@ -54,6 +94,9 @@ export const ASSET_PATHS = {
   platforms: "/assets/sprites/platforms.png",
   slimeGreen: "/assets/sprites/slime_green.png",
   sky: "/sky.png",
+  snow: "/sky-volcano.png",
+  volcanic: "/sky-snow.png",
+  desert: "/sky-desert.png",
   worldTiles: "/assets/sprites/world_tileset.png",
   fruit: "/assets/sprites/fruit.png",
 };

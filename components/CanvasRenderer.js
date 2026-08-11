@@ -1,5 +1,8 @@
-import { PLATFORM_THEMES, PLATFORM_SPRITE_SPECS } from "../game/constants";
-const PLATFORM_HEIGHT = 16;
+import {
+  PLATFORM_THEMES,
+  PLATFORM_SPRITE_SPECS,
+  getBiome,
+} from "../game/constants";
 
 export class CanvasRenderer {
   static render(ctx, engine, images, canvasWidth, canvasHeight) {
@@ -16,7 +19,9 @@ export class CanvasRenderer {
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    const skyImg = images.sky;
+    const currentBiome = getBiome(camera.x + canvasWidth / 2);
+    const skyImg = images[currentBiome.sky] || images.sky;
+
     if (skyImg?.complete && skyImg.naturalWidth !== 0) {
       const rawOffset = Math.floor(camera.x * 0.25);
       const parallaxX = ((rawOffset % canvasWidth) + canvasWidth) % canvasWidth;
@@ -45,7 +50,7 @@ export class CanvasRenderer {
 
     engine.platforms.forEach((plat) => {
       if (images.platforms?.complete && images.platforms.naturalWidth !== 0) {
-        const themeKey = (plat.theme || "grass").toUpperCase();
+        const themeKey = (plat.theme || "GRASS").toUpperCase();
         const sY = PLATFORM_THEMES[themeKey]?.sY ?? 0;
 
         const tileWidth = 16;
@@ -60,18 +65,16 @@ export class CanvasRenderer {
           if (i === 0) srcX = leftX;
           else if (i === totalTiles - 1) srcX = rightX;
 
-          const tileHeight = 16;
-
           ctx.drawImage(
             images.platforms,
             srcX,
             sY,
             16,
-            tileHeight,
+            16,
             plat.x + i * 16,
             plat.y,
             16,
-            tileHeight,
+            16,
           );
         }
       } else {

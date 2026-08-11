@@ -1,17 +1,21 @@
-import './globals.css'
-import { Inter } from 'next/font/google'
+import "./globals.css";
+import { Press_Start_2P } from "next/font/google";
 
-const inter = Inter({ subsets: ['latin'] })
+const pixelFont = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-pixel",
+});
 
 export const metadata = {
-  title: 'Floppy',
-  description: '2D escape game.',
-}
+  title: "Floppy",
+  description: "Platformer",
+};
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={pixelFont.variable}>
+      <body className={pixelFont.className}>{children}</body>
     </html>
-  )
+  );
 }

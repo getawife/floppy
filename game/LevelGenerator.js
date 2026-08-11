@@ -1,4 +1,4 @@
-import { PLATFORM_WIDTH, PLATFORM_HEIGHT } from "./constants";
+import { PLATFORM_WIDTH, PLATFORM_HEIGHT, getBiome } from "./constants";
 
 export class LevelGenerator {
   static MIN_HORIZ_GAP = 90;
@@ -18,20 +18,17 @@ export class LevelGenerator {
     let prevWidth = lastPlat.width;
     let prevWasMoving = lastPlat.isMoving || false;
 
-    // Keep platforms strictly inside reachable vertical bounds
     const minY = 180;
     const maxY = canvasHeight - 160;
 
     const numPlatforms = 5;
 
     for (let i = 0; i < numPlatforms; i++) {
-      // Calculate reachable horizontal gap
       const dx = Math.floor(
         Math.random() * (this.MAX_HORIZ_GAP - this.MIN_HORIZ_GAP) +
           this.MIN_HORIZ_GAP,
       );
 
-      // Random vertical variation within jump limits
       let dy =
         Math.floor(Math.random() * (this.MAX_VERT_DISPLACEMENT * 2)) -
         this.MAX_VERT_DISPLACEMENT;
@@ -39,14 +36,14 @@ export class LevelGenerator {
       let nextX = prevX + prevWidth + dx;
       let nextY = prevY + dy;
 
-      // Clamp vertical bounds
       if (nextY < minY) nextY = minY + Math.floor(Math.random() * 20);
       if (nextY > maxY) nextY = maxY - Math.floor(Math.random() * 20);
 
       const pWidth = Math.random() < 0.2 ? PLATFORM_WIDTH + 40 : PLATFORM_WIDTH;
 
-      // Prevent consecutive moving platforms
       const isMoving = !prevWasMoving && Math.random() < 0.15;
+
+      const biome = getBiome(nextX);
 
       const newPlat = {
         id: engine.nextPlatformId++,
@@ -60,11 +57,12 @@ export class LevelGenerator {
         moveSpeed: 1.0,
         moveDir: 1,
         hasEnemy: false,
+        biome: biome.name,
+        theme: biome.platformTheme,
       };
 
       engine.platforms.push(newPlat);
 
-      // Spawn Mushrooms
       if (!isMoving && Math.random() < 0.2) {
         if (!engine.mushrooms) engine.mushrooms = [];
         engine.mushrooms.push({
@@ -76,7 +74,6 @@ export class LevelGenerator {
         });
       }
 
-      // Spawn Powerup Fruits
       if (Math.random() < 0.25) {
         if (!engine.fruits) engine.fruits = [];
         engine.fruits.push({
@@ -88,7 +85,6 @@ export class LevelGenerator {
         });
       }
 
-      // Spawn Coin Arcs or Lines
       if (Math.random() < 0.5) {
         const coinCount = 3;
         for (let j = 1; j <= coinCount; j++) {
@@ -114,7 +110,6 @@ export class LevelGenerator {
         }
       }
 
-      // Spawn Enemies on stable wide platforms
       if (!isMoving && pWidth >= PLATFORM_WIDTH && Math.random() < 0.25) {
         newPlat.hasEnemy = true;
         engine.enemies.push({
