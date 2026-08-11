@@ -1,26 +1,27 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import GameCanvas from "@/components/GameCanvas";
-import PixelOverlay from "@/components/PixelOverlay";
+import dynamic from "next/dynamic";
 import { useAudio } from "@/hooks/useAudio";
-import TouchControls from "@/components/TouchControls";
+
+const GameCanvas = dynamic(() => import("@/components/GameCanvas"), {
+  ssr: false,
+});
 
 export default function Home() {
   const [gameState, setGameState] = useState("IDLE");
-  const { playWin, playLose, playCoin } = useAudio();
+  const { playSfx } = useAudio();
 
   const handleStart = () => setGameState("PLAYING");
 
-  const handleWin = useCallback(() => {
-    playWin();
-    setGameState("WON");
-  }, [playWin]);
-
   const handleLose = useCallback(() => {
-    playLose();
+    if (playSfx) playSfx("hurt");
     setGameState("LOST");
-  }, [playLose]);
+  }, [playSfx]);
+
+  const handleCollectCoin = useCallback(() => {
+    if (playSfx) playSfx("coin");
+  }, [playSfx]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -28,23 +29,70 @@ export default function Home() {
         setGameState("PLAYING");
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gameState]);
 
   return (
-    <div className="relative w-screen h-screen bg-slate-950 text-white font-mono overflow-hidden select-none">
+    <div className="relative h-screen w-screen overflow-hidden bg-[#11131c] text-white select-none font-pixel">
+      <style jsx global>{`
+        @font-face {
+          font-family: "PixelOperator";
+          src: url("/assets/fonts/PixelOperator8.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "PixelOperatorBold";
+          src: url("/assets/fonts/PixelOperator8-Bold.ttf") format("truetype");
+          font-weight: bold;
+        }
+
+        .font-pixel {
+          font-family: "PixelOperator", monospace;
+        }
+
+        .font-pixel-bold {
+          font-family: "PixelOperatorBold", monospace;
+        }
+      `}</style>
+
       {gameState === "PLAYING" ? (
-        <>
-          <GameCanvas
-            onWin={handleWin}
-            onLose={handleLose}
-            onCollectCoin={playCoin}
-          />
-          <TouchControls />
-        </>
+        <GameCanvas
+          onLose={handleLose}
+          onCollectCoin={handleCollectCoin}
+          playSfx={playSfx}
+        />
       ) : (
-        <PixelOverlay gameState={gameState} onStart={handleStart} />
+        <main className="absolute inset-0 flex flex-col items-center justify-center bg-[#11131c]">
+          {gameState === "IDLE" ? (
+            <div className="text-center space-y-6">
+              <h1 className="font-pixel-bold text-6xl text-yellow-400 drop-shadow-[4px_4px_0_#a16207]">
+                FLOPPY
+              </h1>
+              <button
+                onClick={handleStart}
+                className="font-pixel-bold bg-emerald-500 hover:bg-emerald-400 text-black px-8 py-4 border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1 transition-all"
+              >
+                START GAME
+              </button>
+              <p className="text-xs text-slate-500">PRESS ENTER TO START</p>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <h1 className="font-pixel-bold text-6xl text-red-500 drop-shadow-[4px_4px_0_#7f1d1d]">
+                GAME OVER
+              </h1>
+              <button
+                onClick={handleStart}
+                className="font-pixel-bold bg-red-600 hover:bg-red-500 text-white px-8 py-4 border-b-4 border-red-800 active:border-b-0 active:translate-y-1 transition-all"
+              >
+                TRY AGAIN
+              </button>
+              <p className="text-xs text-slate-500">PRESS ENTER TO RESTART</p>
+            </div>
+          )}
+        </main>
       )}
     </div>
   );
