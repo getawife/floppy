@@ -92,9 +92,17 @@ export class PhysicsEngine {
     engine.globalTimer++;
     const { player, camera } = engine;
 
-    const currentBiome = getBiome(player.x);
-    if (callbacks.onBiomeChange) {
-      callbacks.onBiomeChange(currentBiome);
+    let currentBiomeName = getBiome(player.x).name;
+    if (player.lastSafePlatform && player.lastSafePlatform.biome) {
+      currentBiomeName = player.lastSafePlatform.biome;
+    }
+
+    if (
+      callbacks.onBiomeChange &&
+      engine.currentBiomeName !== currentBiomeName
+    ) {
+      engine.currentBiomeName = currentBiomeName;
+      callbacks.onBiomeChange(getBiome(player.x));
     }
 
     while (

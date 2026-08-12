@@ -1,10 +1,53 @@
 import {
   PLATFORM_THEMES,
   PLATFORM_SPRITE_SPECS,
-  getBiome,
+  getBiomeTransitionInfo,
 } from "../game/constants";
 
 export class CanvasRenderer {
+  static drawSkyLayer(ctx, img, parallaxOffset, canvasWidth, canvasHeight) {
+    if (!img?.complete || img.naturalWidth === 0) return;
+
+    const imgWidth = img.naturalWidth;
+    const imgHeight = img.naturalHeight;
+
+    const maxShift = Math.max(0, imgWidth - canvasWidth);
+    let srcX = 0;
+
+    if (maxShift > 0) {
+      srcX = ((parallaxOffset % maxShift) + maxShift) % maxShift;
+      const srcWidth = Math.min(imgWidth - srcX, canvasWidth);
+      ctx.drawImage(
+        img,
+        srcX,
+        0,
+        srcWidth,
+        imgHeight,
+        0,
+        0,
+        canvasWidth,
+        canvasHeight,
+      );
+    } else {
+      const normalizedRatio =
+        ((parallaxOffset % imgWidth) + imgWidth) % imgWidth;
+      const shiftRatio = (normalizedRatio / imgWidth) * 0.15;
+      const visibleWidth = imgWidth * (1 - shiftRatio);
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        visibleWidth,
+        imgHeight,
+        0,
+        0,
+        canvasWidth,
+        canvasHeight,
+      );
+    }
+  }
+
   static render(ctx, engine, images, canvasWidth, canvasHeight) {
     const { player, camera } = engine;
 
@@ -19,21 +62,42 @@ export class CanvasRenderer {
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    const currentBiome = getBiome(camera.x + canvasWidth / 2);
+    const { currentBiome, nextBiome, alpha } = getBiomeTransitionInfo(
+      player.x,
+      400,
+    );
+
     const skyImg = images[currentBiome.sky] || images.sky;
+    const nextSkyImg = images[nextBiome.sky] || images.sky;
+
+    const parallaxOffset = camera.x * 0.25;
 
     if (skyImg?.complete && skyImg.naturalWidth !== 0) {
-      const rawOffset = Math.floor(camera.x * 0.25);
-      const parallaxX = ((rawOffset % canvasWidth) + canvasWidth) % canvasWidth;
-
-      ctx.drawImage(skyImg, -parallaxX, 0, canvasWidth + 1, canvasHeight);
-      ctx.drawImage(
+      CanvasRenderer.drawSkyLayer(
+        ctx,
         skyImg,
-        canvasWidth - parallaxX - 1,
-        0,
-        canvasWidth + 1,
+        parallaxOffset,
+        canvasWidth,
         canvasHeight,
       );
+
+      if (
+        alpha > 0 &&
+        nextSkyImg?.complete &&
+        nextSkyImg.naturalWidth !== 0 &&
+        nextSkyImg !== skyImg
+      ) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        CanvasRenderer.drawSkyLayer(
+          ctx,
+          nextSkyImg,
+          parallaxOffset,
+          canvasWidth,
+          canvasHeight,
+        );
+        ctx.restore();
+      }
     } else {
       const bg = ctx.createLinearGradient(0, 0, 0, canvasHeight);
       bg.addColorStop(0, "#1a1c2e");

@@ -44,7 +44,9 @@ export class LevelGenerator {
 
       const isMoving = !prevWasMoving && Math.random() < 0.15;
 
-      const biome = getBiome(nextX);
+      const currentBiome = getBiome(nextX);
+      const aheadBiome = getBiome(nextX + 300);
+      const isTransitioning = currentBiome.name !== aheadBiome.name;
 
       const newPlat = {
         id: engine.nextPlatformId++,
@@ -58,14 +60,16 @@ export class LevelGenerator {
         moveSpeed: 1.0,
         moveDir: 1,
         hasEnemy: false,
-        biome: biome.name,
-        theme: biome.platformTheme,
+        biome: currentBiome.name,
+        theme: currentBiome.platformTheme,
       };
 
       engine.platforms.push(newPlat);
 
       if (!isMoving) {
-        this.populatePlatformDecorations(engine, newPlat, biome);
+        if (!isTransitioning || Math.random() < 0.5) {
+          this.populatePlatformDecorations(engine, newPlat, currentBiome);
+        }
       }
 
       if (!isMoving && Math.random() < 0.2) {

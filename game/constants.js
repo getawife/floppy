@@ -63,6 +63,40 @@ export function getBiome(worldX) {
   return BIOMES.GRASSLAND;
 }
 
+export function getBiomeTransitionInfo(worldX, transitionWidth = 400) {
+  const cycleX = Math.abs(worldX) % TOTAL_CYCLE_LENGTH;
+  let currentPos = 0;
+  let currentIdx = 0;
+
+  for (let i = 0; i < BIOME_SEQUENCE.length; i++) {
+    currentPos += BIOME_SEQUENCE[i].length;
+    if (cycleX < currentPos) {
+      currentIdx = i;
+      break;
+    }
+  }
+
+  const currentBiome = BIOME_SEQUENCE[currentIdx];
+  const nextBiome = BIOME_SEQUENCE[(currentIdx + 1) % BIOME_SEQUENCE.length];
+  const boundaryX = currentPos;
+  const startTransitionX = boundaryX - transitionWidth / 2;
+
+  if (cycleX >= startTransitionX) {
+    const alpha = (cycleX - startTransitionX) / transitionWidth;
+    return {
+      currentBiome,
+      nextBiome,
+      alpha: Math.min(1, Math.max(0, alpha)),
+    };
+  }
+
+  return {
+    currentBiome,
+    nextBiome: currentBiome,
+    alpha: 0,
+  };
+}
+
 export const PLATFORM_THEMES = {
   GRASS: { name: "grass", sY: 0 },
   SNOW: { name: "snow", sY: 16 },
