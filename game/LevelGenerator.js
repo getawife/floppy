@@ -1,4 +1,5 @@
 import { PLATFORM_WIDTH, PLATFORM_HEIGHT, getBiome } from "./constants";
+import { BIOME_DECORATIONS } from "./biomeDecorations";
 
 export class LevelGenerator {
   static MIN_HORIZ_GAP = 90;
@@ -62,6 +63,10 @@ export class LevelGenerator {
       };
 
       engine.platforms.push(newPlat);
+
+      if (!isMoving) {
+        this.populatePlatformDecorations(engine, newPlat, biome);
+      }
 
       if (!isMoving && Math.random() < 0.2) {
         if (!engine.mushrooms) engine.mushrooms = [];
@@ -133,6 +138,38 @@ export class LevelGenerator {
       prevY = nextY;
       prevWidth = pWidth;
       prevWasMoving = isMoving;
+    }
+  }
+
+  static populatePlatformDecorations(engine, platform, biome) {
+    if (!engine.decorations) engine.decorations = [];
+
+    const biomeKey = biome?.key || biome?.name?.toLowerCase() || "grassland";
+    const availableDecos =
+      BIOME_DECORATIONS[biomeKey] || BIOME_DECORATIONS.grassland;
+
+    const margin = 16;
+    const step = 24;
+
+    for (
+      let xOffset = margin;
+      xOffset < platform.width - margin;
+      xOffset += step
+    ) {
+      if (Math.random() < 0.35) {
+        const decoType =
+          availableDecos[Math.floor(Math.random() * availableDecos.length)];
+
+        if (Math.random() <= decoType.frequency) {
+          engine.decorations.push({
+            id: Math.random(),
+            x: platform.x + xOffset,
+            y: platform.y + decoType.offsetY,
+            sprite: decoType,
+            platformId: platform.id,
+          });
+        }
+      }
     }
   }
 }

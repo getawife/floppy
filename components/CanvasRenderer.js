@@ -48,6 +48,23 @@ export class CanvasRenderer {
       -Math.floor(camera.y) + shakeOffsetY,
     );
 
+    if (engine.decorations && images.worldTiles?.complete) {
+      engine.decorations.forEach((deco) => {
+        const { sprite } = deco;
+        ctx.drawImage(
+          images.worldTiles,
+          sprite.sx,
+          sprite.sy,
+          sprite.sw,
+          sprite.sh,
+          deco.x,
+          deco.y,
+          sprite.sw,
+          sprite.sh,
+        );
+      });
+    }
+
     engine.platforms.forEach((plat) => {
       if (images.platforms?.complete && images.platforms.naturalWidth !== 0) {
         const themeKey = (plat.theme || "GRASS").toUpperCase();

@@ -40,6 +40,7 @@ export class PhysicsEngine {
       mushrooms: [],
       fruits: [],
       enemies: [],
+      decorations: [],
       particles: [],
       nextPlatformId: 2,
       coyoteTimer: 0,
@@ -115,6 +116,11 @@ export class PhysicsEngine {
     if (engine.fruits) {
       engine.fruits = engine.fruits.filter(
         (f) => f.x > camera.x - 400 && !f.collected,
+      );
+    }
+    if (engine.decorations) {
+      engine.decorations = engine.decorations.filter(
+        (d) => d.x + (d.sprite?.sw || 16) > camera.x - 400,
       );
     }
     engine.enemies = engine.enemies.filter((e) => e.x > camera.x - 400);
