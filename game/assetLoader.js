@@ -3,8 +3,13 @@ import { ASSET_PATHS } from "./constants";
 export class AssetLoader {
   constructor() {
     this.images = {};
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
     Object.keys(ASSET_PATHS).forEach((key) => {
-      this.images[key] = new Image();
+      this.images[key] = new window.Image();
     });
   }
 
@@ -15,6 +20,7 @@ export class AssetLoader {
 
     const update = () => {
       loaded++;
+
       if (onProgress) {
         onProgress(Math.floor((loaded / total) * 100));
       }
@@ -23,6 +29,12 @@ export class AssetLoader {
     const promises = entries.map(([key, src]) => {
       return new Promise((resolve) => {
         const img = this.images[key];
+
+        if (!img) {
+          update();
+          resolve(null);
+          return;
+        }
 
         img.onload = () => {
           update();
